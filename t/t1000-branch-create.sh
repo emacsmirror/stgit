@@ -168,4 +168,15 @@ test_expect_success 'Reuse name of partially removed StGit branch' '
     stg branch --create new
 '
 
+test_expect_success 'Create branch with reserved name "@"' '
+    general_error stg branch --create @ &&
+    test_must_fail git rev-parse --verify refs/heads/@
+'
+
+test_expect_success 'Create branch with "@" as a name component' '
+    stg branch --create @-suffix &&
+    stg branch --create with/@ &&
+    stg branch master
+'
+
 test_done

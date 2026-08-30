@@ -101,7 +101,9 @@ pub(crate) fn partial_ref_name(input: &mut &str) -> ModalResult<PartialRefName> 
 
     let name = input.next_slice(split_offset);
 
-    if name.is_empty() || name == "-" {
+    if name.is_empty() || name == "-" || name == "@" {
+        // A lone "@" is shorthand for "HEAD" in revspecs, so git does not allow it as a
+        // reference name. It remains valid as a component, e.g. "refs/heads/@".
         Err(ErrMode::Backtrack(ContextError::from_input(input)))
     } else if name.ends_with(".lock") {
         // Names ending with ".lock" are invalid and there is no recovery.
@@ -140,6 +142,16 @@ mod tests {
         assert_eq!(
             partial_ref_name.parse_peek("abc.def/"),
             Ok(("/", PartialRefName(String::from("abc.def"))))
+        );
+        assert!(partial_ref_name.parse_peek("@").is_err());
+        assert!(partial_ref_name.parse_peek("@~").is_err());
+        assert_eq!(
+            partial_ref_name.parse_peek("@abc"),
+            Ok(("", PartialRefName(String::from("@abc"))))
+        );
+        assert_eq!(
+            partial_ref_name.parse_peek("abc/@"),
+            Ok(("", PartialRefName(String::from("abc/@"))))
         );
     }
 }
