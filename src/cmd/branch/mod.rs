@@ -151,7 +151,7 @@ fn set_description(
             value.delete();
         }
         if let Ok(section) = local_config_file.section("branch", Some(branchname.into())) {
-            if section.num_values() == 0 {
+            if section.body().num_values() == 0 {
                 local_config_file.remove_section_by_id(section.id());
             }
         }
@@ -202,7 +202,7 @@ fn set_stgit_parent(
             value.delete();
         }
         if let Ok(section) = local_config_file.section("branch", Some(subsection.as_str().into())) {
-            if section.num_values() == 0 {
+            if section.body().num_values() == 0 {
                 local_config_file.remove_section_by_id(section.id());
             }
         }

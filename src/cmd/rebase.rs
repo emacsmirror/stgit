@@ -180,7 +180,6 @@ fn run(matches: &ArgMatches) -> Result<()> {
                 Some(format!("{branch_name}.stgit").as_str().into()),
                 "autostash",
             )
-            .transpose()
             .unwrap_or_else(|e| {
                 crate::print_warning_message(
                     matches,
@@ -189,16 +188,13 @@ fn run(matches: &ArgMatches) -> Result<()> {
                 Some(false)
             })
             .or_else(|| {
-                config
-                    .try_boolean("stgit.autostash")
-                    .transpose()
-                    .unwrap_or_else(|e| {
-                        crate::print_warning_message(
-                            matches,
-                            &format!("Invalid config value `stgit.autostash`: {e}"),
-                        );
-                        Some(false)
-                    })
+                config.try_boolean("stgit.autostash").unwrap_or_else(|e| {
+                    crate::print_warning_message(
+                        matches,
+                        &format!("Invalid config value `stgit.autostash`: {e}"),
+                    );
+                    Some(false)
+                })
             })
             .unwrap_or(false)
     };

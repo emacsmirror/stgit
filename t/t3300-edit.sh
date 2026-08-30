@@ -344,6 +344,36 @@ test_expect_success 'Set author date to "now"' '
     printf "$before\n$(adate HEAD)\n$after\n" | sort -c -
 '
 
+test_expect_success 'Set author date to a relative date' '
+    stg edit p2 --authdate "one week ago" &&
+    week=$(adate HEAD) &&
+    stg edit p2 --authdate "3 days ago" &&
+    days=$(adate HEAD) &&
+    stg edit p2 --authdate "3.days.ago" &&
+    dotted=$(adate HEAD) &&
+    stg edit p2 --authdate "2 days 3 hours ago" &&
+    hours=$(adate HEAD) &&
+    test "$week" \< "$days" &&
+    test "$week" \< "$dotted" &&
+    test "$days" \< "$hours" &&
+    test "$dotted" \< "$hours"
+'
+
+test_expect_success 'Relative author date uses the local time zone' '
+    TZ=Asia/Kolkata stg edit p2 --authdate "1 day ago" &&
+    case "$(adate HEAD)" in
+    *" +0530") : ;;
+    *) echo "expected +0530, got $(adate HEAD)" && false ;;
+    esac
+'
+
+test_expect_success 'Set author date from epoch with @ prefix' '
+    stg edit p2 --authdate "@1641479527 -0500" &&
+    test "$(adate HEAD)" = "2022-01-06 09:32:07 -0500" &&
+    stg edit p2 --authdate "@1641479527" &&
+    test "$(adate HEAD)" = "2022-01-06 14:32:07 +0000"
+'
+
 test_expect_success 'Set patch tree' '
     p2tree=$(git log -1 --pretty=format:%T $(stg id p2)) &&
     p4commit=$(stg id p4) &&
